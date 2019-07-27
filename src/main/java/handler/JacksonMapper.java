@@ -7,10 +7,6 @@ public class JacksonMapper {
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 
-	/**
-	 *  create once, reuse
-	 * @return ObjectMapper 单例
-	 */
 	public static ObjectMapper getInstance() {
 
 		return MAPPER;
