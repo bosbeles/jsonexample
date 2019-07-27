@@ -8,14 +8,15 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import model.Sample;
 
-public class SampleChannelInitializer<T> extends ChannelInitializer<SocketChannel> {
+public class JsonChannelInitializer<T> extends ChannelInitializer<SocketChannel> {
 
     private final BusinessHandler handler;
+    private final Class<T> clazz;
 
-    public SampleChannelInitializer(BusinessHandler handler) {
+    public JsonChannelInitializer(BusinessHandler<T> handler, Class<T> clazz) {
         this.handler = handler;
+        this.clazz = clazz;
 
     }
 
@@ -26,8 +27,8 @@ public class SampleChannelInitializer<T> extends ChannelInitializer<SocketChanne
         //pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
         //pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
         //pipeline.addLast(new LoggingHandler(LogLevel.INFO));
-        pipeline.addLast("jsonDecoder", new JsonDecoder<Sample>(Sample.class));
-        pipeline.addLast("jsonEncoder", new JsonEncoder<Sample>());
+        pipeline.addLast("jsonDecoder", new JsonDecoder<T>(clazz));
+        pipeline.addLast("jsonEncoder", new JsonEncoder<T>());
         pipeline.addLast("handler", handler);
 
     }

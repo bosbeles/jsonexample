@@ -4,7 +4,7 @@ import handler.BusinessHandler;
 import model.Sample;
 import tcp.endpoint.ClientEndpoint;
 import tcp.endpoint.Endpoint;
-import tcp.endpoint.SampleChannelInitializer;
+import tcp.endpoint.JsonChannelInitializer;
 import tcp.endpoint.ServerEndpoint;
 
 import java.util.Arrays;
@@ -27,13 +27,13 @@ public class Main {
             }
         };
 
-        Endpoint server = new ServerEndpoint(new SampleChannelInitializer<>(serverHandler), 9999);
-        Endpoint client = new ClientEndpoint(new SampleChannelInitializer<>(clientHandler), "localhost", 9999);
+        Endpoint server = new ServerEndpoint(new JsonChannelInitializer<>(serverHandler, Sample.class), 9999);
+        Endpoint client = new ClientEndpoint(new JsonChannelInitializer<>(clientHandler, Sample.class), "localhost", 9999);
 
 
         new Thread(() -> server.start()).start();
         TimeUnit.SECONDS.sleep(5);
-        new Thread(()-> client.start()).start();
+        new Thread(() -> client.start()).start();
         TimeUnit.SECONDS.sleep(1);
 
         Sample s = new Sample();
@@ -49,7 +49,10 @@ public class Main {
 
         clientHandler.send(s);
 
+        TimeUnit.SECONDS.sleep(1);
 
+        client.stop();
+        server.stop();
 
 
     }
