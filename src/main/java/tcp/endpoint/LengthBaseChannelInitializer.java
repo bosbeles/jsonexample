@@ -1,22 +1,21 @@
 package tcp.endpoint;
 
 import handler.BusinessHandler;
-import handler.JsonDecoder;
-import handler.JsonEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.CharsetUtil;
 
-public class JsonChannelInitializer<T> extends ChannelInitializer<SocketChannel> {
+public class LengthBaseChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final BusinessHandler handler;
-    private final Class<T> clazz;
 
-    public JsonChannelInitializer(BusinessHandler<T> handler, Class<T> clazz) {
+    public LengthBaseChannelInitializer(BusinessHandler handler) {
         this.handler = handler;
-        this.clazz = clazz;
 
     }
 
@@ -24,11 +23,9 @@ public class JsonChannelInitializer<T> extends ChannelInitializer<SocketChannel>
         ChannelPipeline pipeline = socketChannel.pipeline();
         pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 4));
         pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
-        //pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
-        //pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
+        pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
+        pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
         //pipeline.addLast(new LoggingHandler(LogLevel.INFO));
-        pipeline.addLast("jsonDecoder", new JsonDecoder<T>(clazz));
-        pipeline.addLast("jsonEncoder", new JsonEncoder<T>());
         pipeline.addLast("handler", handler);
 
     }

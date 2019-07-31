@@ -17,7 +17,7 @@ public abstract class BaseEndpoint implements Endpoint {
         this.port = port;
     }
 
-    public void stop() {
+    public synchronized void stop() {
         if (group != null && !group.isShutdown()) {
             try {
                 group.shutdownGracefully().sync();
