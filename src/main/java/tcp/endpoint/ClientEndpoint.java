@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 public class ClientEndpoint extends BaseEndpoint {
 
     private final ChannelInitializer<SocketChannel> initializer;
+
+
     private boolean onceConnected;
 
     private double retryCoeff = 2.0;
@@ -36,14 +38,15 @@ public class ClientEndpoint extends BaseEndpoint {
     private Instant startTime;
     private Instant disconnectedTime;
 
-    public ClientEndpoint(ChannelInitializer<SocketChannel> initializer, int port) {
-        super(port);
-        this.initializer = initializer;
+    public ClientEndpoint(Initializer<SocketChannel> initializer, int port) {
+        this(initializer, "localhost", port);
     }
 
-    public ClientEndpoint(ChannelInitializer<SocketChannel> initializer, String hostname, int port) {
+    public ClientEndpoint(Initializer<SocketChannel> initializer, String hostname, int port) {
         super(hostname, port);
         this.initializer = initializer;
+        plugBusinessHandler(initializer);
+
     }
 
 
@@ -57,7 +60,6 @@ public class ClientEndpoint extends BaseEndpoint {
     }
 
 
-
     public void doConnect() {
         try {
             Bootstrap clientBootstrap = new Bootstrap();
@@ -67,14 +69,17 @@ public class ClientEndpoint extends BaseEndpoint {
             clientBootstrap.remoteAddress(new InetSocketAddress(hostname, port));
             clientBootstrap.handler(initializer);
 
+
             ChannelFuture channelFuture = clientBootstrap.connect().addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     peerConnected(future.channel().localAddress());
                 }
             });
 
-            channelFuture.channel().closeFuture().addListener((ChannelFutureListener) future -> {
+            channel = channelFuture.channel();
+            channel.closeFuture().addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
+                    stateChanged(State.DISCONNECTED);
                     tryToRetry();
                 }
             });
@@ -87,22 +92,26 @@ public class ClientEndpoint extends BaseEndpoint {
 
     }
 
-    public synchronized void stopFail() {
+    private synchronized void stopFail() {
         log.info("Fail");
+        stateChanged(State.STOPPED);
         stop();
     }
 
-    public synchronized void stopStart() {
+    private synchronized void stopStart() {
         log.info("Starting");
+        stateChanged(State.STARTING);
         stop();
     }
 
 
     private void peerConnected(SocketAddress socketAddress) {
+        stateChanged(State.CONNECTED);
+
         onceConnected = true;
         disconnectedTime = null;
         currentRetryTime = minRetryTime;
-        log.info("Client connected to remote {}:{} at local address {}", hostname ,  port, socketAddress );
+        log.info("Client connected to remote {}:{} at local address {}", hostname, port, socketAddress);
     }
 
     private void tryToRetry() {
@@ -124,7 +133,7 @@ public class ClientEndpoint extends BaseEndpoint {
         long d = Duration.between(startTime, Instant.now()).toMillis();
         long next = (long) (currentRetryTime * retryCoeff);
         currentRetryTime = Math.min(maxRetryTime, next);
-        if(d < startupTimeout) {
+        if (d < startupTimeout) {
             long timeTo = startupTimeout - d;
             currentRetryTime = Math.min(currentRetryTime, timeTo);
         }
@@ -135,7 +144,7 @@ public class ClientEndpoint extends BaseEndpoint {
         long d = Duration.between(disconnectedTime, Instant.now()).toMillis();
         long next = (long) (currentRetryTime * retryCoeff);
         currentRetryTime = Math.min(maxRetryTime, next);
-        if(d < disconnectTimeout) {
+        if (d < disconnectTimeout) {
             long timeTo = disconnectTimeout - d;
             currentRetryTime = Math.min(currentRetryTime, timeTo);
 
@@ -157,6 +166,7 @@ public class ClientEndpoint extends BaseEndpoint {
             stopFail();
         } else {
             // State timeout
+            stateChanged(State.TIMEOUT);
             log.info("Timeout");
             doConnect();
         }
@@ -176,7 +186,8 @@ public class ClientEndpoint extends BaseEndpoint {
             stopFail();
         } else {
             // State timeout
-            System.out.println("Timeout");
+            stateChanged(State.TIMEOUT);
+            log.info("Timeout");
             doConnect();
         }
     }

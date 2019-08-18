@@ -1,24 +1,20 @@
 package handler;
 
-import com.google.gson.Gson;
-import model.BaseType;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class DispatcherHandler extends BusinessHandler {
+public class Dispatcher {
 
     private final ServiceRegistry serviceRegistry;
     ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    public DispatcherHandler(ServiceRegistry serviceRegistry, Gson gson) {
-        super(gson);
+    public Dispatcher(ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
 
     }
 
-    @Override
-    public void onMessageReceived(BaseType data) {
+    public void onMessage(Object data) {
+        System.out.println("Dispatcher: " + data);
         scheduler.submit(() -> serviceRegistry.dispatch(data.getClass(), data));
     }
 }
