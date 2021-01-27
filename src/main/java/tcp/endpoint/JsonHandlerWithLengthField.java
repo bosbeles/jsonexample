@@ -39,7 +39,7 @@ public class JsonHandlerWithLengthField implements Supplier<List<ChannelHandler>
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new LengthFieldBasedFrameDecoder(maxFrameSize, 0, LENGTH_FIELD_LENGTH, 0, LENGTH_FIELD_LENGTH));
         handlers.add(new LengthFieldPrepender(LENGTH_FIELD_LENGTH));
-        handlers.add(new LoggingHandler(LogLevel.INFO));
+        //handlers.add(new LoggingHandler(LogLevel.ERROR));
         handlers.add(new StringDecoder(CharsetUtil.UTF_8));
         handlers.add(new StringEncoder(CharsetUtil.UTF_8));
         handlers.add(new MessageToMessageCodec<String, BaseType>() {

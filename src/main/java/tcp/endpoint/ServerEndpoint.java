@@ -34,8 +34,6 @@ public class ServerEndpoint extends BaseEndpoint {
 
 
     private final Initializer<SocketChannel> initializer;
-    private EventLoopGroup workerGroup;
-
 
     public ServerEndpoint(Initializer<SocketChannel> initializer, int port) {
         this(initializer, "localhost", port);
@@ -51,8 +49,7 @@ public class ServerEndpoint extends BaseEndpoint {
     @Override
     public synchronized void start() {
         stop();
-        group = new NioEventLoopGroup();
-        workerGroup = new NioEventLoopGroup();
+        group = new NioEventLoopGroup(4);
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(group);
@@ -77,13 +74,14 @@ public class ServerEndpoint extends BaseEndpoint {
 
     @Override
     public synchronized void stop() {
-        if (workerGroup != null) {
+        if (group != null) {
             try {
-                workerGroup.shutdownGracefully().sync();
+                group.shutdownGracefully().sync();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
         super.stop();
     }
+
 }

@@ -1,5 +1,6 @@
 package tcp.endpoint;
 
+import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 
 import java.util.function.BiConsumer;
@@ -17,11 +18,17 @@ public interface Endpoint {
 
     void send(Object data);
 
-    void onMessage(Consumer<Object> onMessage);
+    void send(Object data, Channel channel);
+
+    void onMessage(BiConsumer<Object, Channel> onMessage);
 
     void onError(Consumer<Throwable> onError);
 
     void onStateChange(BiConsumer<State, State> onStateChange);
+
+    String getName();
+
+    void setName(String name);
 
     EventLoopGroup getEventLoop();
 

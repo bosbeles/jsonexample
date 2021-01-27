@@ -6,9 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 import handler.Service;
 import handler.ServiceRegistry;
-import model.BaseType;
-import model.Car;
-import model.Cat;
+import model.*;
 
 public class TestUtil {
 
@@ -17,7 +15,11 @@ public class TestUtil {
         RuntimeTypeAdapterFactory<BaseType> factory = RuntimeTypeAdapterFactory
                 .of(model.BaseType.class, "type")
                 .registerSubtype(Car.class, "car")
-                .registerSubtype(Cat.class, "cat");
+                .registerSubtype(Cat.class, "cat")
+                .registerSubtype(MessageA.class, "a")
+                .registerSubtype(MessageB.class, "b")
+                .registerSubtype(MessageC.class, "c");
+
         gsonBuilder.registerTypeAdapterFactory(factory);
         Gson gson = gsonBuilder.create();
 
@@ -27,9 +29,9 @@ public class TestUtil {
     public static ServiceRegistry createSampleServiceRegistry() {
 
         ServiceRegistry registry = new ServiceRegistry();
-        Service<Cat> catService = message -> System.out.println("A cat: " + message);
-        Service<Car> carService = message -> System.out.println("A car: " + message);
-        Service<Car> secondCarService = message -> System.out.println("A car (2): " + message);
+        Service<Cat> catService = (message, channel) -> System.out.println("A cat: " + message);
+        Service<Car> carService = (message, channel) -> System.out.println("A car: " + message);
+        Service<Car> secondCarService = (message, channel) -> System.out.println("A car (2): " + message);
 
         registry.register(Car.class, carService);
         registry.register(Cat.class, catService);

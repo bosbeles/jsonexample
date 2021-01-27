@@ -1,5 +1,7 @@
 package handler;
 
+import io.netty.channel.Channel;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,10 +22,10 @@ public class ServiceRegistry {
     }
 
 
-    public <T> void dispatch(Class<T> clazz, Object data) {
+    public <T> void dispatch(Class<T> clazz, Object data, Channel channel) {
         List<Service> services = this.services.get(clazz);
         if (services != null) {
-            services.forEach(s -> s.onMessage(data));
+            services.forEach(s -> s.onMessage(data, channel));
         }
     }
 }

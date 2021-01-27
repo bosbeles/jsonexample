@@ -1,5 +1,7 @@
 package handler;
 
+import io.netty.channel.Channel;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -13,8 +15,8 @@ public class Dispatcher {
 
     }
 
-    public void onMessage(Object data) {
-        System.out.println("Dispatcher: " + data);
-        scheduler.submit(() -> serviceRegistry.dispatch(data.getClass(), data));
+    public void onMessage(Object data, Channel channel) {
+        //System.out.println("Dispatcher: " + data + " ch: " + channel);
+        scheduler.submit(() -> serviceRegistry.dispatch(data.getClass(), data, channel));
     }
 }

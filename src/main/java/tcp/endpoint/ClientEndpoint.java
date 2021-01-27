@@ -38,6 +38,8 @@ public class ClientEndpoint extends BaseEndpoint {
     private Instant startTime;
     private Instant disconnectedTime;
 
+
+
     public ClientEndpoint(Initializer<SocketChannel> initializer, int port) {
         this(initializer, "localhost", port);
     }
@@ -48,6 +50,7 @@ public class ClientEndpoint extends BaseEndpoint {
         plugBusinessHandler(initializer);
 
     }
+
 
 
     @Override
