@@ -21,7 +21,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         Gson gson = TestUtil.createSampleGson();
-        //ServiceRegistry registry = TestUtil.createSampleServiceRegistry();
+        ServiceRegistry registry = TestUtil.createSampleServiceRegistry();
         ServiceRegistry clientRegistry = new ServiceRegistry();
         ServiceRegistry serverRegistry = new ServiceRegistry();
 

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import handler.Dispatcher;
 import handler.Service;
 import handler.ServiceRegistry;
+import io.netty.channel.socket.SocketChannel;
 import model.MessageA;
 import model.MessageB;
 import model.MessageC;
@@ -15,22 +16,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 public class ClientTest {
 
 
     public static void main(String[] args) throws InterruptedException {
         Gson gson = TestUtil.createSampleGson();
+        Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer(new JsonHandlerWithLengthField(gson));
+        //Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new ObjectHandler());
+
         ServiceRegistry clientRegistry = new ServiceRegistry();
-
-
         Dispatcher clientDispatcher = new Dispatcher(clientRegistry);
 
-        Endpoint[] clients = new Endpoint[50];
+        Endpoint[] clients = new Endpoint[250];
 
-        Endpoint server = new ServerEndpoint(new Initializer<>(new JsonHandlerWithLengthField(gson)), 9999);
+        Endpoint server = new ServerEndpoint(initializerSupplier.get(), 9999);
         for (int i = 0; i < clients.length; i++) {
-            clients[i] = new ClientEndpoint(new Initializer<>(new JsonHandlerWithLengthField(gson)), "localhost", 9999);
+            clients[i] = new ClientEndpoint(initializerSupplier.get(), "localhost", 9999);
             clients[i].onMessage(clientDispatcher::onMessage);
             clients[i].setName("Client_" + i);
         }
@@ -63,8 +66,8 @@ public class ClientTest {
                     scheduler.scheduleAtFixedRate(() -> {
                         MessageA a = new MessageA();
                         a.setTime1(Instant.now());
-                        client.send(a);
-                    }, 100, 40, TimeUnit.MILLISECONDS);
+                        //client.send(a);
+                    }, 100, 100, TimeUnit.MILLISECONDS);
 
                     scheduler.scheduleAtFixedRate(() -> {
                         MessageC c = new MessageC();
@@ -72,7 +75,7 @@ public class ClientTest {
                         c.setSender(client.getName());
                         c.setTime1(Instant.now());
                         client.send(c);
-                    }, 100, 40, TimeUnit.MILLISECONDS);
+                    }, 100, 1000, TimeUnit.MILLISECONDS);
                 }
             });
         }

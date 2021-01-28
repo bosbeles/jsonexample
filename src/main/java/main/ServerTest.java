@@ -4,25 +4,26 @@ import com.google.gson.Gson;
 import handler.Dispatcher;
 import handler.Service;
 import handler.ServiceRegistry;
+import io.netty.channel.socket.SocketChannel;
 import model.MessageA;
 import model.MessageB;
 import model.MessageC;
-import tcp.endpoint.Endpoint;
-import tcp.endpoint.Initializer;
-import tcp.endpoint.JsonHandlerWithLengthField;
-import tcp.endpoint.ServerEndpoint;
+import tcp.endpoint.*;
 import tcp.endpoint.test.TestUtil;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Supplier;
 
 public class ServerTest {
 
 
     public static void main(String[] args) throws InterruptedException {
         Gson gson = TestUtil.createSampleGson();
+        Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new JsonHandlerWithLengthField(gson));
+        //Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new ObjectHandler());
 
         ServiceRegistry serverRegistry = new ServiceRegistry();
 
@@ -30,7 +31,7 @@ public class ServerTest {
         Dispatcher serverDispatcher = new Dispatcher(serverRegistry);
 
 
-        Endpoint server = new ServerEndpoint(new Initializer<>(new JsonHandlerWithLengthField(gson)), 9999);
+        Endpoint server = new ServerEndpoint(initializerSupplier.get(), 9999);
 
 
         server.onMessage(serverDispatcher::onMessage);
@@ -47,7 +48,7 @@ public class ServerTest {
         Service<MessageC> serviceCServer = (m, c) -> {
             m.setTime2(Instant.now());
             server.send(m);
-            if(m.getSequence()%1000 == 0) {
+            if (m.getSequence() % 1000 == 0) {
                 System.out.println("C @server: " + m.getSender() + "-" + m.getSequence() + " Latency = " + Duration.between(m.getTime1(), m.getTime2()));
             }
         };
@@ -56,11 +57,9 @@ public class ServerTest {
         serverRegistry.register(MessageC.class, serviceCServer);
 
 
-
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
         new Thread(() -> server.start()).start();
-
 
 
     }
