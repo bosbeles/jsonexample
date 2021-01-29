@@ -23,8 +23,8 @@ public class ClientTest {
 
     public static void main(String[] args) throws InterruptedException {
         Gson gson = TestUtil.createSampleGson();
-        Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer(new JsonHandlerWithLengthField(gson));
-        //Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new ObjectHandler());
+        //Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer(new JsonHandlerWithLengthField(gson));
+        Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new ObjectHandler());
 
         ServiceRegistry clientRegistry = new ServiceRegistry();
         Dispatcher clientDispatcher = new Dispatcher(clientRegistry);
@@ -66,7 +66,7 @@ public class ClientTest {
                     scheduler.scheduleAtFixedRate(() -> {
                         MessageA a = new MessageA();
                         a.setTime1(Instant.now());
-                        //client.send(a);
+                        client.send(a);
                     }, 100, 100, TimeUnit.MILLISECONDS);
 
                     scheduler.scheduleAtFixedRate(() -> {

@@ -1,8 +1,9 @@
 package model;
 
+import java.io.Serializable;
 import java.time.Instant;
 
-public class MessageBase extends BaseType {
+public class MessageBase extends BaseType implements Serializable {
     private String sender;
     private int sequence;
 

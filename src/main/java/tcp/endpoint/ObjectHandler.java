@@ -23,7 +23,7 @@ public class ObjectHandler implements Supplier<List<ChannelHandler>> {
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ObjectEncoder());
         handlers.add(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-        handlers.add(new LoggingHandler(LogLevel.ERROR));
+        //handlers.add(new LoggingHandler(LogLevel.ERROR));
 
         return handlers;
     }

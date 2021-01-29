@@ -22,8 +22,8 @@ public class ServerTest {
 
     public static void main(String[] args) throws InterruptedException {
         Gson gson = TestUtil.createSampleGson();
-        Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new JsonHandlerWithLengthField(gson));
-        //Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new ObjectHandler());
+        //Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new JsonHandlerWithLengthField(gson));
+        Supplier<Initializer<SocketChannel>> initializerSupplier = () -> new Initializer<>(new ObjectHandler());
 
         ServiceRegistry serverRegistry = new ServiceRegistry();
 
@@ -48,7 +48,7 @@ public class ServerTest {
         Service<MessageC> serviceCServer = (m, c) -> {
             m.setTime2(Instant.now());
             server.send(m);
-            if (m.getSequence() % 1000 == 0) {
+            if (m.getSequence() % 100 == 0) {
                 System.out.println("C @server: " + m.getSender() + "-" + m.getSequence() + " Latency = " + Duration.between(m.getTime1(), m.getTime2()));
             }
         };
